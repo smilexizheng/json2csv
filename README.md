@@ -13,15 +13,14 @@ Convenient JSON data extraction tool.
         * name,id,age / ["age","name","id"]
    * 字段映射csv头 排序+按需导出 ，移除id列
         * {name:"名字",age:'年龄'}
-3. 添加csv头：选择框 csv第一行是否包含字段信息。  
-
+3. 添加csv头：选择框 csv第一行是否包含字段信息。
+4. 支持直接粘贴json字符串或拖拽上传json文件，生成为同名csv文件，支持多文件。
 ## 支持以下常见JSON数据格式：
-> 拖放json文件到上传框内，生成为同名csv文件，支持多文件。
-### 2.*任意多级节点下的数组数据*
+### 1.*任意多级节点下的数组数据*
 ```json
 {"data":{"items":[{"title":"one","price":23},{"title":"two","price":92},{"title":"three","price":5623}]}}
 ```
-### 3.*兼容处理数据区域非数组结构而是一个对象的情况*
+### 2.*兼容处理数据区域非数组结构而是一个对象的情况*
 ```json
 {"data":{"items":{"1":{"title":"one","name":"test1"},"2":{"title":"two","name":"test2"},"3":{"title":"three","name":"test3"}}}}
 ```  
