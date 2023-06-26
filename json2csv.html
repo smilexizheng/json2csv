@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>json2csv</title>
+    <style type="text/css">
+        input {
+            width: 730px;
+            line-height: 20px;
+            text-align: start;
+            margin-bottom: 6px;
+        }
+
+        .drop_div {
+            width: 800px;
+            height: 160px;
+            margin-bottom: 4px;
+            border: 2px dashed #ccc;
+            background-color: #FFF;
+        }
+
+        .drop_div:hover {
+            cursor: pointer;
+            background-color: #efefef;
+        }
+
+        p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<h3>1.数据配置</h3>
+<label>数据路径</label><input id="key" value="data.items" placeholder="如 data.items,可为空"/></br>
+<h3>2.待处理数据 </h3>
+<h4>2.1 字符方式 </h4>
+<label>JSON字符</label><input id="jsonStr"
+                            value='{"data":{"items":[{"fd_code":"XX789","fd_name":"股票名称","yield":"134.2313","sf_type":"1","unit_nav":"1.8080","f_type":"fund"}]}}'/></br>
+<button onclick="csvByChar()">开始转换</button>
+
+<h4>2.2 文件方式</h4>
+<label>拖拽/点击选择 JSON文件</label><input type="file" multiple id="jsonFile" style="display: none"
+                                    onchange="csvByUpload()"/></br>
+<div id="drop" class="drop_div" onclick="csvByUpload()"></div>
+<!--<h5>文件列表</h5>-->
+<!--<ul>-->
+<!--    <li>xx.png</li>-->
+<!--</ul>-->
+<!--<button onclick="csvByUpload()">再次读取</button>-->
+<h3>其他选项</h3>
+<label>字段解析</label><input id="header" value="{fd_code:'股票代码',fd_name:'股票名称'}"
+                          placeholder="数组格式按需解析字段,对象可映射解析头信息,可为空"/></br>
+<label>添加csv头</label><input type="checkbox" id="hasHeader" checked/>
+
+<h3>日志</h3>
+<div id="msgbox" style="width: 800px;height: 190px;border: 1px solid #e5e5e5;overflow: auto;">
+</div>
+</body>
+<script type="text/javascript">
+
+
+    function csvByChar() {
+        addMsg("开始处理json数据")
+        let data = parseJson(yasuo(document.getElementById("jsonStr").value, 1));
+        downData(data);
+    }
+
+    function csvByUpload() {
+        let jsonFile = document.getElementById("jsonFile");
+        if (jsonFile.files && jsonFile.files[0]) {
+            for (let file of jsonFile.files) {
+                readFile(file);
+            }
+            jsonFile.value = '';
+        } else {
+            jsonFile.click();
+        }
+    }
+
+    function readFile(file) {
+        if (file.type !== "application/json") {
+            addMsg(file.name + ",仅支持json文件")
+            return;
+        }
+        addMsg(file.name + ",开始处理")
+        let reader = new FileReader();
+        reader.onload = function () {
+            //读取完成后，数据保存在对象的result属性中
+            // console.log(this.result)
+            let data = b64_to_utf8(this.result.split(",")[1]);
+            downData(parseJson(data), file.name.split(".")[0]);
+        }
+        reader.onerror = function () {
+            addMsg(file.name + ",读取文件出错")
+        }
+        reader.readAsDataURL(file);//发起异步请求
+    }
+
+
+    function downData(data, csvName) {
+        console.log(data)
+        csvName = (csvName || 'data') + '.csv';
+        if (!data) {
+            addMsg("数据为空")
+            return;
+        }
+
+        //是否添加表头
+        let hasHeader = document.getElementById("hasHeader").checked;
+        //表头
+        let header = document.getElementById("header").value;
+        if(header){
+            header= parseJson(header) || header.split(",");
+        }
+        //数据穿透
+        let keys = document.getElementById("key").value.split(".");
+        try {
+            keys.forEach(v => {
+                if (data[v] != undefined) {
+                    data = data[v]
+                } else {
+                    throw  new Error('undefined');
+                }
+            });
+        } catch (e) {
+            addMsg(csvName + ",解析数据失败")
+            console.warn(`${e},数据不包含${keys}`)
+        }
+
+
+        //是否为数组
+        let isArr = Array.isArray(data);
+
+        // 处理数据为csv的格式
+        let csvString = ""
+        if (isArr) {
+            if (!data.length) {
+                addMsg("数据为空")
+            }
+            addMsg(csvName + ",数组格式，正在读取数据")
+            //为空 按首个数据块，全量解析
+            if (!header) {
+                header = Object.keys(data[0])
+            }
+        } else {
+            addMsg(csvName + ",对象格式，正在读取数据")
+            //为空 按首个数据块，全量解析
+            if (!header) {
+                let values = Object.values(data)[0];
+                header = Object.keys(values);
+            }
+            data = Object.values(data);
+        }
+        //csv是否包含头
+        if (hasHeader) {
+            csvString += readHeader(header);
+        }
+
+        data.map(item => {
+            csvString += readRow(item, header);
+        })
+        addMsg(csvName + "开始下载")
+        //下载csv文件并添加按钮
+        csvString = "data:application/csv;charset=utf-8,\ufeff" + encodeURIComponent(csvString)
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = csvString;
+        a.download = csvName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+
+    function readHeader(header) {
+        let str = "";
+        if (Array.isArray(header)) {
+            header.map(key => {
+                let value = key || "";
+                str += value + ','
+            })
+        } else {
+            Object.keys(header).map(key => {
+                let value = header[key] || "";
+                str += value + ','
+            })
+        }
+        str += '\r\n'
+        return str;
+
+    }
+
+    function readRow(data, header) {
+        let str = "";
+        if (Array.isArray(header)) {
+            header.map(key => {
+                let value = data[key] || "";
+                str += value + ','
+            })
+        } else {
+            Object.keys(header).map(key => {
+                let value = data[key] || "";
+                str += value + ','
+            })
+        }
+        str += '\r\n'
+        return str;
+    }
+
+    /**
+     * 严格的json 格式
+     * {"a":"张三","b":1}
+     */
+    function parseJson(str) {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            console.warn("JSON解析失败，尝试Function方式", e);
+            return parseJson2(str);
+        }
+    }
+
+    /**
+     * 对象格式
+     * {a:"张三",b:1}
+     * @param str
+     */
+    function parseJson2(str) {
+        try {
+            return new Function('return ' + str)();
+        } catch (e) {
+            addMsg("解析json失败")
+            console.warn("Function解析失败", e);
+            return null;
+        }
+    }
+
+
+    /**
+     *压缩
+     *@param e 数据
+     * @param t 1压缩 2转义  4去除转义
+     */
+    function yasuo(e, t) {
+        if (1 === t || 3 === t) {
+            let n = [];
+            for (let i = !1, o = 0, r = (e = e.split("\n").join(" ")).length; o < r; o++) {
+                let a = e.charAt(o);
+                i && a === i ? "\\" !== e.charAt(o - 1) && (i = !1) : i || '"' !== a && "'" !== a ? i || " " !== a && "\t" !== a || (a = "") : i = a,
+                    n.push(a)
+            }
+            e = n.join("")
+        }
+        2 !== t && 3 !== t || (e = e.replace(/\\/g, "\\\\").replace(/\"/g, '\\"'));
+        4 === t && (e = e.replace(/\\\\/g, "\\").replace(/\\\"/g, '"'));
+        return e;
+    }
+
+
+    /**
+     * 编码base64 支持中文
+     * @param str
+     * @returns {string}
+     */
+    function utf8_to_b64(str) {
+        return window.btoa(unescape(encodeURIComponent(str)));
+    }
+
+    /**
+     * base64 转换支持中文
+     * @param str
+     * @returns {string}
+     */
+    function b64_to_utf8(str) {
+        return decodeURIComponent(escape(window.atob(str)));
+    }
+
+
+    function handleEvent(event) {
+        // 阻止事件的默认行为
+        event.preventDefault();
+        if (event.type === 'drop') {
+            // 文件进入并松开鼠标,文件边框恢复正常
+            dropDiv.style.backgroundColor = '#FFF'
+            for (let file of event.dataTransfer.files) {
+                readFile(file);
+            }
+        } else if (event.type === 'dragleave') {
+            // 离开时边框恢复
+            dropDiv.style.backgroundColor = '#FFF'
+        } else {
+            // 进入边框变为红色
+            dropDiv.style.backgroundColor = '#efefef'
+        }
+    }
+
+    const dropDiv = document.getElementById("drop");
+    // 拖拽事件绑定
+    dropDiv.addEventListener("dragenter", handleEvent);
+    dropDiv.addEventListener("dragover", handleEvent);
+    dropDiv.addEventListener("drop", handleEvent);
+    dropDiv.addEventListener("dragleave", handleEvent);
+
+
+    const msgBox = document.getElementById("msgbox");
+
+    function addMsg(msg) {
+        const p = document.createElement("p");
+        p.innerHTML = `${new Date().toLocaleString()}：${msg}`;
+        msgBox.prepend(p);
+    }
+
+
+</script>
+</html>
