@@ -1,5 +1,5 @@
 # Json2Csv
-js html 实现的一款通用型JSON数据提取工具，支持自动识别JSON数据节点并有序提取为CSV文件。  
+Js HTML 实现的一款通用型JSON数据提取工具，支持自动识别JSON数据节点并有序提取为CSV文件。  
 Convenient JSON data extraction tool.
 
 # 使用简介
@@ -24,6 +24,26 @@ Convenient JSON data extraction tool.
 ```json
 {"data":{"items":{"1":{"title":"one","name":"test1"},"2":{"title":"two","name":"test2"},"3":{"title":"three","name":"test3"}}}}
 ```  
+### 3. *支持非严格的JSON数据,字段名可 不加双引号 "" *
+>使用动态创建函数，会遇到和 eval() 类似的的安全问题和（相对较小的）性能问题。与 eval() 不同的是，Function 构造函数创建的函数只能在全局作用域中运行。 [MDN Function介绍](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function)
+```javascript
+{data:{items:[{title:"one",price:23},{"title":"two","price":92}]}}
+
+/**
+ * 小工具使用，存在的安全问题，可知可控。
+ * @param str
+ * @returns {null|*}
+ */
+function parseJson2(str) {
+    try {
+        return new Function('"use strict"; return '+str)();
+    } catch (e) {
+        addMsg("解析json失败")
+        console.warn("Function解析失败", e);
+        return null;
+    }
+}
+```
 数据位于"data.items"多级节点下，则填写【数据路径】，如`data.items`
 ![img.png](img.png)
 

@@ -221,13 +221,13 @@
     }
 
     /**
-     * 对象格式
+     * JS格式的 对象或数据
      * {a:"张三",b:1}
      * @param str
      */
     function parseJson2(str) {
         try {
-            return new Function('return ' + str)();
+            return new Function('"use strict"; return '+str)();
         } catch (e) {
             addMsg("解析json失败")
             console.warn("Function解析失败", e);
