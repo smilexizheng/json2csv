@@ -3,6 +3,10 @@ Js HTML 实现的一款通用型JSON数据提取工具，支持自动识别JSON�
 Convenient JSON data extraction tool.
 
 # 使用简介
+> 浏览器打开 json2csv.html 
+
+![img_3.png](img_2.png)
+## 数据配置
 1. 数据路径：设置Json中数据所处路径，如'root.topics.data'  'data.items' ...
    
 2. 字段解析：为空则为全量解析，自动识别字段头。可自定义 排序、映射、按需导出csv文件。
@@ -14,6 +18,7 @@ Convenient JSON data extraction tool.
    * 字段映射csv头 排序+按需导出 ，移除id列
         * {name:"名字",age:'年龄'}
 3. 添加csv头：选择框 csv第一行是否包含字段信息。
+   
 4. 支持直接粘贴json字符串或拖拽上传json文件，生成为同名csv文件，支持多文件。
 ## 支持以下常见JSON数据格式：
 ### 1.*任意多级节点下的数组数据*
