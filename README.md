@@ -51,13 +51,7 @@ function parseJson2(str) {
     }
 }
 ```
-## 谷歌浏览器 关闭同源策略方法
-```text
-1.建数据缓存文件夹：C:\MyChromeUserData
-2.建立快捷方式： 桌面 → 右键 → 新建 → 快捷方式 → 输入对象目标地址:
 
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --allow-file-access-from-files --user-data-dir="C:\MyChromeUserData" --disable-web-security
-```
 
 数据位于"data.items"多级节点下，则填写【数据路径】，如`data.items`
 ![img.png](img.png)
@@ -66,3 +60,10 @@ function parseJson2(str) {
 ![img_1.png](img_1.png)
 
 
+## 谷歌浏览器 关闭同源策略方法
+```text
+1.建数据缓存文件夹：C:\MyChromeUserData
+2.建立快捷方式： 桌面 → 右键 → 新建 → 快捷方式 → 输入对象目标地址:
+
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --allow-file-access-from-files --user-data-dir="C:\MyChromeUserData" --disable-web-security
+```
