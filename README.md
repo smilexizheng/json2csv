@@ -3,9 +3,15 @@ Js HTML 实现的一款通用型JSON数据提取工具，支持自动识别JSON�
 Convenient JSON data extraction tool.
 
 # 使用简介
-> 浏览器打开 json2csv.html 
+> 浏览器打开 json2csv.html, 支持json字符、json文件、以及连续的api地址请求（因为同源策略，无法跨域请求，谷歌浏览器关闭同源策略方法）
+```text
+1.建数据缓存文件夹：C:\MyChromeUserData
+2.建立快捷方式： 桌面 → 右键 → 新建 → 快捷方式 → 输入对象目标地址:
 
-![img_3.png](img_2.png)
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --allow-file-access-from-files --user-data-dir="C:\MyChromeUserData" --disable-web-security
+```
+
+ ![img_2.png](img_2.png)
 ## 数据配置
 1. 数据路径：设置Json中数据所处路径，如'root.topics.data'  'data.items' ...
    
@@ -20,6 +26,8 @@ Convenient JSON data extraction tool.
 3. 添加csv头：选择框 csv第一行是否包含字段信息。
    
 4. 支持直接粘贴json字符串或拖拽上传json文件，生成为同名csv文件，支持多文件。
+
+
 ## 支持以下常见JSON数据格式：
 ### 1.*任意多级节点下的数组数据*
 ```json
