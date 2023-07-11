@@ -263,15 +263,23 @@
 
     function readRow(data, header) {
         let str = "";
+
+        function extracted(key) {
+            let value = '';
+            if (data[key]) {
+                value = '"' + data[key].toString() + '"' || "";
+            }
+            str += value + ','
+        }
+
         if (Array.isArray(header)) {
             header.map(key => {
-                let value = data[key] || "";
-                str += value + ','
+                extracted(key);
             })
         } else {
             Object.keys(header).map(key => {
-                let value = data[key] || "";
-                str += value + ','
+                console.log(data[key])
+                extracted(key);
             })
         }
         str += '\r\n'
